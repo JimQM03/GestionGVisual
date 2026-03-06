@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>GestionG - Control de Finanzas</title>
+</head>
+<body>
+    <!-- Encabezado principal -->
+    <header>
+        <div class="header-content">
+            <h1>GestionG</h1>
+            <div class="user-info">
+                <span id="nombre-usuario-display">Cargando...</span>
+                <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesion</button>
+            </div>
+        </div>
+    </header>
+
+
+    <main class="dashboard">
+        <!-- ============================================
+             COLUMNA IZQUIERDA - Resumen y entradas 
+             ============================================ -->
+        <div class="columna-izquierda">
+            
+            <!-- Seccion de resumen: muestra los calculos -->
+            <section id="resumenes">
+                <h3>Tu resumen</h3>
+                <div class="resumen-grid">
+                    <p>Sueldo: <span id="Mostrar-sueldo">0</span> COP</p>   
+                    <p>Ahorro Quincenal (10%): <span id="Ahorro-quincenal">0</span> COP</p>
+                    <p>Valor por clase: <span id="valor-clase">0</span> COP</p>
+                </div>
+            </section>
+
+            <!-- Entradas de informacion basica -->
+            <section id="ingresos">
+                <h3>Datos de ingresos</h3>
+                <input type="number" id="num-clases" placeholder="Numero de clases dadas">
+                <input type="number" id="CopQuincenal" placeholder="Sueldo en pesos">
+                <textarea id="desc-ingreso" placeholder="Descripcion del ingreso (Ej: Bono Extra)" rows="2"></textarea>
+                <button id="botonGuardar" class="btn-primario">Guardar</button>
+            </section>
+
+            <!--Grafico de gastos-->
+            <section id="contenedor-grafico">
+                <h3>Distribución de Gastos</h3>
+                <canvas id="graficoGastos"></canvas>
+            </section>
+
+        </div>
+
+        <!-- ============================================
+             COLUMNA DERECHA - Planificador de gastos
+        ============================================ -->
+        <div class="columna-derecha">
+            <section id="horario-gastos">
+                <h2>Planificador de Gastos</h2>
+                
+                <!-- Gastos que son todos los meses -->
+                <div class="seccion-gastos">
+                    <!--Seleccion de fecha-->
+                    <div class="seccion-fecha-global">
+                        <h3>Fecha de los registros:</h3>
+                        <input type="date" id="fecha-global-registro">
+                    </div>
+                    <h3>Gastos Especificos</h3>
+                    
+                    <div class="fila-gasto">
+                        <input type="number" id="valor-gasto-real" placeholder="Monto $">
+                    </div>
+
+                    <div class="fila-gasto">
+                        <textarea id="desc-gasto" placeholder="¿En que consistio este gasto?" rows="2" style="width: 100%;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Gastos variables del dia a dia -->
+                <div class="seccion-gastos">
+                    <h3>Gastos Variables</h3>
+                    <input type="number" id="gasto-compras" placeholder="Mercado/Dia a dia">
+                    <input type="number" id="gasto-antojos" placeholder="Antojos y salidas">
+                </div>
+
+                <!-- Seguimiento de deudas -->
+                <div class="seccion-gastos">
+                    <h3>Deudas</h3>
+                    <input type="number" id="deuda-corto" placeholder="Celular (Corto plazo)">
+                    <input type="number" id="deuda-largo" placeholder="Largo plazo">
+                </div>
+
+                <button id="botonCalcularGastos">Calcular Gastos</button>
+            </section>
+
+            <!-- Aqui se mostrara el calendario de pagos -->
+            <section id="lista-proximos-pagos">
+                <!--Contenedor flexible para titulo y boton de exportar-->
+                <div class="header-historial">
+                    <h2>Agenda de Gastos</h2>
+                    <button id="boton-exportar">Exportar</button>
+                </div>
+
+                <section id="seccion-historial">
+                    <h2>Pestana de Historial</h2>
+                    <div id="contenedor-historial">
+                        <table id = "tabla-historial">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descricion</th>
+                                    <th>Costo</th>
+                                    <th>Prioridad</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpo-historial">
+                                <tr>
+                                    <td colspan="5" class="texto-centrado">Aun no hay registros en el historial.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <!-- Resumen del total acumulado -->
+                         <div class="caja-total">
+                            <strong>Total gastado: </strong>
+                            <span id="total-gastado">$0</span>
+                         </div>
+                    <button id="botonBorrarHistorial" style="background-color: #dc3545;">Borrar Historial</button>
+                </section>
+                <div id="contenedor-agenda">
+                    <p>Ingresa los datos y dale a "Calcular Gastos" para ver tu agenda.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <!--Contenedor para notificaciones flotantes-->
+    <div id="notificacion-container" class="notificacion-hidden"></div>
+
+    <!--Modal de confirmacion personalizado-->
+    <div id="custom-modal" class="modal-hidden">
+        <div class="modal-content">
+            <h3 id="modal-titulo">¿Estas seguro?</h3>
+            <p id="modal-texto">Esta accion no se podra deshacer.</p>
+            <div class="modal-actions">
+                <button id="modal-confirmar" class="btn-danger">Confirmar</button>
+                <button id="modal-cancelar" class="btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <!--Modal informativo-->
+    <div id="modal-notificacion" class="modal-hidden">
+        <div class="modal-content notificacion-card">
+            <div id="icono-notificacion">✅</div>
+            <div id="mensaje-notificacion-modal"></div>
+
+            <div class="botones-modal-container"style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="btn-enviar-email-modal" class="btn-email">📧 Enviar resumen al correo</button>
+                <button id="btn-cerrar-notif" class="boton-primario">Entendido</button>
+            </div>
+        </div>
+    </div>
+    <!--Modal de eliminacion individual-->
+    <div id="modal-confirmar-eliminar" class="modal-hidden">
+        <div class="modal-content notification-card">
+            <div style="font-size: 50px;">🗑️</div>
+            <p>¿Estás seguro de que quieres eliminar este gasto?</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="btn-si-eliminar" class="btn-danger">Sí, borrar</button>
+                <button id="btn-no-eliminar" class="btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!--Llamado del grafico-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script> <!--Estamos descargandola desde la pagina cdn.jsdelivr.net-->
+
+    <!--Llamado del script-->
+    <script src="script.js"></script>
+    
+</body>
+
